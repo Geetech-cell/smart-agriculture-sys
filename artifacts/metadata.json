@@ -1,0 +1,15 @@
+{
+  "model_path": "D:\\Smart Agriculture System\\artifacts\\model.joblib",
+  "config_path": "D:\\Smart Agriculture System\\configs\\default.json",
+  "metrics": {
+    "mae": 1.7613488830983868,
+    "r2": 0.029181860082166278
+  },
+  "fairness_report": {
+    "East": 1.0048141233309302,
+    "North": 0.9258282802752572,
+    "South": 1.1503891831284074,
+    "West": 0.9979595881380863,
+    "max_mae_gap": 0.22456090285315022
+  }
+}
