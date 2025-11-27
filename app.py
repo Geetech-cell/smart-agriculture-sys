@@ -136,7 +136,7 @@ def home_page():
                 showlegend=True
             )
             
-            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig, width='stretch', config={'displayModeBar': False})
         
         UI.card(weather_chart, "🌤️ Weather Forecast", "")
     
@@ -178,7 +178,7 @@ def home_page():
                 )]
             )
             
-            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig, width='stretch', config={'displayModeBar': False})
             
             # Add a mini table with crop details
             st.markdown("### Crop Details")
@@ -283,7 +283,7 @@ def history_page():
                 markers=True
             )
             fig.update_layout(height=400)
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, width='stretch')
     else:
         UI.info_box("No prediction history yet. Make your first prediction to start tracking!", "info")
     
@@ -325,11 +325,11 @@ def settings_page():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("📥 Export All Data", use_container_width=True):
+        if st.button("📥 Export All Data", width='stretch'):
             UI.success_badge("Data export initiated")
     
     with col2:
-        if st.button("🔄 Backup Data", use_container_width=True):
+        if st.button("🔄 Backup Data", width='stretch'):
             UI.success_badge("Backup created")
     
     with col3:
