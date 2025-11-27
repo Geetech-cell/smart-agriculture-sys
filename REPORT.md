@@ -1,441 +1,158 @@
-# 🌱 Smart Agriculture System - Project Report
+# Smart Agriculture System – Technical Report
 
-## 1. Executive Summary
+## 1. System Overview
 
-### Project Overview
-The Smart Agriculture System is a comprehensive AI-powered platform designed to revolutionize agricultural decision-making through advanced machine learning, real-time monitoring, and intelligent analytics. The system empowers farmers and agronomists with data-driven insights for optimal crop management and yield optimization.
+This project is a **Streamlit-based decision support tool** for agriculture. It combines a pre-trained scikit‑learn pipeline with an interactive dashboard to provide:
 
-### Key Achievements
-- **R² Score:** 0.972 (97.2% variance explained)
-- **Mean Absolute Error:** 0.298 tons/hectare
-- **Inference Speed:** < 100ms per prediction
-- **UI/UX Excellence:** Modern, intuitive interface with organized workflows
-- **Feature Completeness:** 4 comprehensive modules with 20+ sub-features
+- Crop yield prediction
+- Crop health analysis
+- Historical prediction tracking and export
+
+The focus of this version is a **clean, production-ready app** rather than model training.
 
 ---
 
-## 2. Technical Implementation
+## 2. Architecture
 
-### 2.1 Model Architecture & Performance
+### 2.1 High-Level Components
 
-#### Core ML Pipeline
-- **Model Type:** Ensemble (XGBoost + LightGBM)
-- **Training:** 5-fold cross-validation
-- **Feature Engineering:** 15+ agronomic indicators
-- **Validation:** Temporal and spatial cross-validation
+- **UI Layer (`app.py`)**  
+  - Defines the main Streamlit app and page layout (tabs / sections).  
+  - Uses `Theme` and `UI` helpers from `src/ui_components.py` for consistent styling.
 
-#### Performance Metrics
-| Metric | Value | Industry Benchmark |
-|--------|-------|-------------------|
-| R² Score | 0.972 | 0.85-0.90 |
-| MAE | 0.298 t/ha | 0.5-0.8 t/ha |
-| Latency | <100ms | <500ms |
-| Accuracy | 97.2% | 85-90% |
+- **Service Layer (`src/predict_service.py`, `src/model_loader.py`)**  
+  - `PredictionRequest`: dataclass describing model inputs.  
+  - `PredictionService`: responsible for loading the trained pipeline and making predictions.  
+  - `load_service(metadata_path)`: reads `artifacts/metadata.json`, resolves `model_path`, and instantiates a cached `PredictionService` via Streamlit's `st.cache_resource`.
 
-#### Feature Importance
-1. **Soil Moisture** (23%) - Critical for plant water uptake
-2. **NDVI** (19%) - Vegetation health indicator
-3. **Rainfall** (17%) - Primary water source
-4. **Temperature** (15%) - Growth rate controller
-5. **Fertilizer Application** (12%) - Nutrient availability
-6. **Soil pH** (8%) - Nutrient accessibility
-7. **Pest Pressure** (6%) - Yield loss factor
+- **Data & History (`src/data/history.py`, `data/`)**  
+  - `PredictionHistory` handles persistence of past predictions (e.g. SQLite / file-based).  
+  - `data/predictions.db` stores recorded runs used in the History tab.
 
-### 2.2 Application Features
+- **Weather Integration (`src/api/weather.py`)**  
+  - `WeatherAPI` calls the Open‑Meteo API when available, with a robust fallback to **mock weather data**.  
+  - `get_weather_for_region(region)` returns a simple dictionary used to render the dashboard weather card and forecast chart.
 
-#### 🌱 Crop Prediction Module
-**Recent Enhancements (v2.1.0):**
-- **Organized Input Sections** - Three collapsible expanders:
-  - 📍 Location & Weather (expanded by default)
-  - 🌱 Crop & Soil Conditions (expanded by default)
-  - 🚜 Field Management (collapsed for optional inputs)
-  
-- **Enhanced Result Display:**
-  - Beautiful gradient yield card with large, prominent numbers
-  - Confidence indicator badge
-  - Professional styling with shadows and animations
-  
-- **Limiting Factors Analysis:**
-  - Horizontal bar chart showing optimization levels (0-100%)
-  - Primary limiting factor highlighted in red
-  - Actionable recommendations for improvement
-  - Real-time calculation of: Rainfall adequacy, Soil moisture level, Fertilizer optimization, Pest pressure impact
-
-**User Benefits:**
-- Cleaner, less cluttered interface
-- Logical grouping reduces cognitive load
-- Visual identification of improvement opportunities
-- Mobile-responsive design
-
-#### 🏥 Crop Health Analyzer
-**Advanced Features:**
-- **Growth Stage Tracking** - Context-aware recommendations for:
-  - Seedling (Focus: Root establishment, soil moisture, temperature)
-  - Vegetative (Focus: Leaf development, nitrogen, pest control)
-  - Reproductive (Focus: Flowering/fruiting, water, phosphorus/potassium)
-  - Maturity (Focus: Grain filling, pest control, dry conditions)
-
-- **Health Metrics Dashboard:**
-  - Soil Quality Index (0-100)
-  - Pest Risk Percentage
-  - Water Balance Status
-  - Overall Health Score
-
-- **Detailed Diagnosis:**
-  - Stage-specific critical factors
-  - Issue detection (low moisture, pest threats)
-  - Color-coded alerts (success/warning/error)
-  - Remediation recommendations
-
-- **Risk Assessment Matrix:**
-  - Visual heatmap (0-10 scale)
-  - Pest Risk (based on pressure index)
-  - Disease Risk (rainfall + temperature formula)
-  - Climate Risk (environmental factors)
-  - Color gradient: Green (safe) → Yellow (moderate) → Red (high)
-
-- **Smart Irrigation System:**
-  - Context-aware recommendations
-  - Weather-adjusted calculations
-  - Duration and amount specifications
-  - Multi-factor reasoning display
-
-- **Historical Analysis:**
-  - Save analysis snapshots
-  - Track health scores over time
-  - Compare irrigation actions
-  - Export history data
-
-#### 📊 Data Explorer Module
-**Comprehensive Analytics:**
-- **Interactive Visualizations:**
-  - Correlation Heatmap (with insights)
-  - Pair Plots
-  - Distribution Charts
-  - Box Plots
-  - Violin Plots
-  - 2D Scatter Plots
-  - **3D Scatter Plots** (NEW)
-
-- **Pivot Table Analysis:**
-  - Dynamic data aggregation
-  - Multi-dimensional views
-  - Custom calculations
-
-- **Outlier Detection:**
-  - IQR Method (Interquartile Range)
-  - Z-Score Method
-  - Visual highlighting
-  - Statistical summaries
-
-- **Target Correlation:**
-  - Identify yield-correlated features
-  - Sorted by correlation strength
-  - Visual bar charts
-
-- **Advanced Filtering:**
-  - Multi-column filters
-  - Range selectors
-  - Reset functionality
-
-- **Data Quality Reports:**
-  - Missing value analysis
-  - Duplicate detection
-  - Type distribution
-  - Completeness metrics
-
-### 2.3 Technical Stack
-
-#### Backend Technologies
-- **Language:** Python 3.10+
-- **ML Frameworks:** scikit-learn, XGBoost, LightGBM
-- **Data Processing:** pandas, NumPy
-- **Statistical Analysis:** SciPy
-
-#### Frontend Technologies
-- **Web Framework:** Streamlit
-- **Visualization:** Plotly, Matplotlib, Seaborn
-- **UI Components:** Custom theme system
-- **Styling:** Custom CSS with modern design principles
-
-#### Architecture Patterns
-- **Modular Design:** Separation of concerns (UI, business logic, data)
-- **Service Layer:** `PredictionService`, `CropHealthAnalyzer`
-- **Component Library:** Reusable UI components
-- **State Management:** Streamlit session state
+- **Model Compatibility (`src/data_pipeline.py`)**  
+  - Minimal placeholder classes and functions (e.g. `DataPipeline`, `FeatureEngineer`) exist to satisfy imports referenced inside the pickled model (`artifacts/model.joblib`).  
+  - These stubs are intentionally lightweight and are **not** used for new training.
 
 ---
 
-## 3. User Experience Design
+## 3. Model Details
 
-### 3.1 Design Philosophy
-- **Clarity:** Information hierarchy with clear visual cues
-- **Efficiency:** Organized workflows, minimal clicks
-- **Feedback:** Real-time validation and helpful messages
-- **Accessibility:** Color contrast, readable fonts, responsive layout
+- **Type:** scikit‑learn pipeline, serialized with `joblib`.  
+- **Location:** `artifacts/model.joblib`.  
+- **Loading:**
+  - `PredictionService._load_model()` calls `joblib.load(model_path)`.  
+  - After loading, a **dummy prediction** is executed on synthetic data to verify that the pipeline is fitted and has a working `.predict` method.  
+  - Errors in loading or inference are logged and wrapped in a clear `RuntimeError`.
 
-### 3.2 UI/UX Improvements (v2.1.0)
+- **Inputs (conceptual):**
+  - Region, crop, season
+  - Average temperature, rainfall
+  - Soil moisture, NDVI, soil pH
+  - Pest pressure, fertilizer rate
 
-#### Visual Design
-- **Color System:**
-  - Success: Green gradients (#2e7d32 → #4caf50)
-  - Warning: Amber (#ff9800)
-  - Error: Red (#ef5350)
-  - Info: Blue (#0d6efd)
+- **Output:**
+  - Predicted yield (e.g. tonnes per hectare) as a single numeric value.  
+  - The UI derives additional labels (e.g. "above average", confidence level, harvest window) for display only.
 
-- **Typography:**
-  - Headers: Bold, clear hierarchy
-  - Body: Readable, adequate spacing
-  - Metrics: Large, prominent numbers
-
-- **Spacing & Layout:**
-  - Consistent padding and margins
-  - Generous white space
-  - Card-based information grouping
-
-#### Interaction Design
-- **Progressive Disclosure:** Collapsible expanders for optional inputs
-- **Immediate Feedback:** Real-time slider updates, visual indicators
-- **Error Prevention:** Input validation, range constraints
-- **Clear Actions:** Prominent primary buttons, secondary options
+The original training pipeline is **not** part of this repository snapshot; the model is treated as an external artifact.
 
 ---
 
-## 4. Ethical & Sustainability Framework
+## 4. User Interface Flow
 
-### 4.1 Bias Mitigation
-**Strategies:**
-- Regular fairness assessments across regions and crop types
-- Balanced training data representation
-- Transparent reporting of model limitations
-- Continuous monitoring for prediction bias
+### 4.1 Dashboard (Home)
 
-**Metrics Tracked:**
-- Prediction accuracy by region
-- Performance across crop varieties
-- Fairness indices (demographic parity, equal opportunity)
+- Displays key metrics such as:
+  - Average yield
+  - Soil health index
+  - Number of active fields
+  - Next harvest countdown
+- Uses the weather service to show:
+  - Current temperature, wind and humidity
+  - 7‑day forecast (min/max temperatures and precipitation) in a Plotly chart.
+- Shows a crop distribution donut chart and a small summary list.
 
-### 4.2 Environmental Impact
-**Green AI Practices:**
-- **Energy-Efficient Models:** Optimized for CPU inference
-- **Carbon-Aware Training:** Schedule during low-carbon periods
-- **Model Compression:** Reduced size without accuracy loss
-- **Sustainable Recommendations:** Water optimization, carbon sequestration
+### 4.2 Prediction Studio
 
-**Environmental Benefits:**
-- Water savings through precise irrigation
-- Reduced fertilizer waste
-- Lower carbon footprint from optimized farming
-- Support for regenerative agriculture
+Implemented via a combination of `app.py` and `src/modules/prediction_studio.py`:
 
-### 4.3 Inclusivity & Accessibility
-**Features:**
-- Clean, high-contrast interface
-- Responsive design for mobile devices
-- Simple, jargon-free language
-- Multi-language support (planned)
-- Offline capabilities (planned)
+- Organizes inputs into:
+  - Crop information (crop, season, region)
+  - Environmental factors (temperature, rainfall)
+  - Soil conditions (moisture, pH)
+  - Management (fertilizer, irrigation, pest control)
+- On **Predict**:
+  - Constructs a `PredictionRequest`-compatible dict/DataFrame.  
+  - Calls the `PredictionService` to obtain the yield.  
+  - Displays metrics for predicted yield, confidence and optimal harvest window.
+- Additional sections:
+  - Bar chart of factor contributions (conceptual, UI-focused).  
+  - Text recommendations to improve yield.  
+  - Simple line charts comparing last season vs projected yield.  
+  - One‑click CSV and text report export for the current prediction.
 
-**Community Engagement:**
-- Farmer feedback integration
-- Local knowledge incorporation
-- Open-source contribution model
+### 4.3 Crop Health Analysis
 
----
+- Tabs: **Health Overview**, **Environmental**, **Trends**.  
+- Inputs: soil moisture, NDVI, temperature, pest/disease pressure, growth stage.  
+- Computes a scalar **health_score** and displays it in a colour‑coded card.  
+- Shows:
+  - Key indicators (temperature, moisture, NDVI, threats).  
+  - Environmental charts (temperature curve, light intensity, nutrient metrics).  
+  - 30‑day trends for health score and temperature.
+- Recommendation section with:
+  - Growth tips
+  - Alerts (e.g. low moisture, high pest pressure)
+  - Simple management schedule.
 
-## 5. Testing & Quality Assurance
+### 4.4 History & Export
 
-### 5.1 Model Validation
-**Methodology:**
-- 5-fold cross-validation
-- Temporal validation (future data)
-- Spatial validation (different regions)
-- Out-of-distribution testing
-
-**Results:**
-- Consistent R² > 0.95 across folds
-- MAE < 0.3 on validation sets
-- No significant overfitting detected
-
-### 5.2 Application Testing
-**Automated Tests:**
-- Unit tests for core functions
-- Integration tests for modules
-- UI component tests
-- Performance benchmarks
-
-**Manual Testing:**
-- User acceptance testing (UAT)
-- Cross-browser compatibility
-- Mobile responsiveness
-- Accessibility compliance
-
-### 5.3 Continuous Monitoring
-**Production Metrics:**
-- Prediction latency
-- Error rates
-- User engagement
-- Feature usage
-
-**Data Quality:**
-- Input validation
-- Anomaly detection
-- Drift monitoring
+- Retrieves recent predictions from `PredictionHistory`.  
+- Displays them as a DataFrame with date/time, region, crop, season, prediction and confidence.  
+- Generates a CSV on the fly using `pandas.DataFrame(...).to_csv(index=False)` and exposes it via `st.download_button`.
 
 ---
 
-## 6. Deployment & Operations
+## 5. Error Handling & Logging
 
-### 6.1 Deployment Architecture
-**Current Setup:**
-- Local deployment via Streamlit
-- Simple command-line interface
-- Configuration via JSON files
-
-**Production-Ready Features:**
-- Docker containerization support
-- Environment variable configuration
-- Secrets management
-- Logging and monitoring
-
-### 6.2 Scalability Considerations
-**Horizontal Scaling:**
-- Stateless application design
-- Load balancer ready
-- Database connection pooling
-
-**Vertical Scaling:**
-- Optimized memory usage
-- Efficient data processing
-- Caching strategies
+- `src/predict_service.py` and `src/model_loader.py` use Python `logging` to report:
+  - Model load attempts and paths
+  - Success or failure of initialization
+  - Detailed stack traces when model loading or validation fails
+- The dummy prediction step during `_load_model()` catches common issues early (e.g. unfitted pipeline, incompatible columns).
 
 ---
 
-## 7. Future Roadmap
+## 6. Dependencies
 
-### Q1 2025
-- [ ] Mobile application (iOS/Android)
-- [ ] Weather forecast integration
-- [ ] Satellite imagery analysis
-- [ ] Multi-language support (5+ languages)
+Runtime dependencies are defined in `requirements.txt` and include:
 
-### Q2 2025
-- [ ] AI-powered pest/disease detection from images
-- [ ] Drone integration for field mapping
-- [ ] Blockchain supply chain tracking
-- [ ] API marketplace
+- `pandas`, `numpy`
+- `scikit-learn`, `joblib`
+- `xgboost`, `lightgbm` (used inside the pickled model)
+- `streamlit`, `plotly`, `requests`
+- `pytest` (optional, for tests)
 
-### Q3 2025
-- [ ] Carbon credit calculation
-- [ ] Water rights management
-- [ ] Cooperative farming features
-- [ ] SMS/USSD interface for feature phones
-
-### Q4 2025
-- [ ] Regional expansion (Africa, Asia, Latin America)
-- [ ] IoT sensor certification program
-- [ ] Machine-to-machine (M2M) protocols
-- [ ] AI ethics certification
+These versions are intentionally kept reasonably up‑to‑date while remaining compatible with common Python 3.10+ environments.
 
 ---
 
-## 8. Impact Assessment
+## 7. Extending the System
 
-### 8.1 Quantitative Impacts
-**Projected Benefits (per 1000 farmers):**
-- **Yield Improvement:** 15-30% increase
-- **Water Savings:** 20-35% reduction
-- **Fertilizer Optimization:** 10-25% reduction in waste
-- **Income Increase:** 20-40% revenue growth
-- **Time Savings:** 5-10 hours/week
+To plug in a new model:
 
-### 8.2 Qualitative Impacts
-**Farmer Empowerment:**
-- Data-driven decision confidence
-- Reduced uncertainty and risk
-- Better resource planning
-- Improved crop quality
+1. Train a compatible scikit‑learn pipeline in a separate environment.
+2. Save it as `model.joblib` and place it under `artifacts/`.
+3. Update `artifacts/metadata.json` to point to the new model path if necessary.
+4. Ensure any custom classes referenced by the pipeline are importable from `src/` (or adjust the pipeline to use standard components).
 
-**Environmental Benefits:**
-- Reduced chemical runoff
-- Lower carbon emissions
-- Water conservation
-- Soil health improvement
+To add new UI pages or KPIs:
 
-### 8.3 Alignment with UN SDGs
-- **SDG 2:** Zero Hunger - Increased food production
-- **SDG 6:** Clean Water - Water conservation
-- **SDG 12:** Responsible Consumption - Resource optimization
-- **SDG 13:** Climate Action - Carbon reduction
-- **SDG 15:** Life on Land - Sustainable farming
+- Reuse components from `src/ui_components.py` for consistent styling.  
+- Add new sections or tabs to `app.py` or create new modules under `src/modules/` and import them into the main app.
 
----
-
-## 9. Technical Documentation
-
-### 9.1 API Reference
-**Core Classes:**
-- `PredictionService` - Yield prediction interface
-- `CropHealthAnalyzer` - Health analysis module
-- `Theme` - UI theme management
-- `UIComponents` - Reusable UI elements
-
-**Key Functions:**
-- `predict()` - Generate yield prediction
-- `irrigation_recommendation()` - Smart watering advice
-- `load_dataset_preview()` - Data loading utility
-
-### 9.2 Configuration
-**Files:**
-- `artifacts/metadata.json` - Model metadata
-- `.streamlit/secrets.toml` - API keys and secrets
-- `configs/default.json` - Training configuration
-
----
-
-## 10. Acknowledgments
-
-### Contributors
-- Machine Learning Team
-- UI/UX Design Team
-- Agricultural Domain Experts
-- Open Source Community
-
-### Data Sources
-- FAOSTAT (Food and Agriculture Organization)
-- NASA POWER (Prediction of Worldwide Energy Resources)
-- Open-Meteo API
-- Kaggle Agricultural Datasets
-
----
-
-## 11. Contact & Support
-
-### Community
-- **GitHub:** [Issues & Discussions](https://github.com/yourusername/smart-agriculture-system)
-- **Documentation:** [Project Wiki](https://github.com/yourusername/smart-agriculture-system/wiki)
-
-### Professional Support
-- **Email:** contact@smartagri.tech
-- **Website:** https://smartagri.tech
-
----
-
-## 12. License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-**Open Source Commitment:**
-- Free for research and educational use
-- Commercial licenses available
-- Contributions welcome
-
----
-
-*Last Updated: November 24, 2024*  
-*Version: 2.1.0*  
-*Status: Production Ready*
-
----
-
-**Note:** This report reflects the current state of the Smart Agriculture System. For the latest updates and feature additions, please refer to the [CHANGELOG.md](CHANGELOG.md) and [GitHub repository](https://github.com/yourusername/smart-agriculture-system).
+This completes the high-level technical description of the current Smart Agriculture System implementation.

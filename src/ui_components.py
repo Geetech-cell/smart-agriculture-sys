@@ -1,356 +1,342 @@
 """
-UI Components for Smart Agriculture System
-
-This module contains reusable UI components for the Streamlit application.
+Enhanced UI Components with Animations, Tooltips & Dark Mode
+Professional-grade components for Smart Agriculture System
 """
 import streamlit as st
-from typing import Optional, Dict, Any, List
-import time
+import plotly.graph_objects as go
+from typing import Dict, Any, List, Callable
+import json
 
 class Theme:
-    """Theme configuration for the app"""
-    PRIMARY_COLOR = "#2E8B57"  # Sea Green
-    SECONDARY_COLOR = "#3CB371"  # Medium Sea Green
-    ACCENT_COLOR = "#FFA500"  # Orange
-    BACKGROUND_COLOR = "#F5F5F5"
-    TEXT_COLOR = "#333333"
-    CARD_BACKGROUND = "#FFFFFF"
-    BORDER_RADIUS = "10px"
-    BOX_SHADOW = "0 4px 6px rgba(0, 0, 0, 0.1)"
+    """Enhanced theme system with dark mode support"""
     
-    @staticmethod
-    def apply_custom_theme():
-        """Apply custom CSS theme to the app with mobile responsiveness"""
+    # Light theme
+    LIGHT = {
+        'primary': '#10b981',
+        'secondary': '#3b82f6',
+        'success': '#10b981',
+        'warning': '#f59e0b',
+        'danger': '#ef4444',
+        'dark': '#1f2937',
+        'light': '#f9fafb',
+        'text': '#1f2937',
+        'bg': '#ffffff',
+        'bg_secondary': '#f9fafb'
+    }
+    
+    # Dark theme
+    DARK = {
+        'primary': '#10b981',
+        'secondary': '#60a5fa',
+        'success': '#10b981',
+        'warning': '#fbbf24',
+        'danger': '#f87171',
+        'dark': '#f9fafb',
+        'light': '#1f2937',
+        'text': '#f9fafb',
+        'bg': '#1f2937',
+        'bg_secondary': '#374151'
+    }
+    
+    @classmethod
+    def get_current(cls):
+        """Get current theme based on session state"""
+        if 'dark_mode' not in st.session_state:
+            st.session_state.dark_mode = False
+        return cls.DARK if st.session_state.dark_mode else cls.LIGHT
+    
+    @classmethod
+    def apply(cls):
+        """Apply theme with animations"""
+        theme = cls.get_current()
         st.markdown(f"""
         <style>
-            /* Responsive base styles */
-            @media (max-width: 768px) {{
-                .main .block-container {{
-                    padding: 1rem 0.5rem !important;
-                }}
-                
-                .stButton > button {{
-                    width: 100% !important;
-                    margin: 0.25rem 0;
-                }}
-                
-                .stSelectbox, .stTextInput, .stNumberInput, .stSlider > div > div {{
-                    width: 100% !important;
-                }}
-                
-                .metric-card {{
-                    margin-bottom: 0.5rem !important;
-                }}
+            @keyframes fadeIn {{
+                from {{ opacity: 0; transform: translateY(10px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
             }}
             
-            /* Main app styling */
+            @keyframes slideIn {{
+                from {{ transform: translateX(-20px); opacity: 0; }}
+                to {{ transform: translateX(0); opacity: 1; }}
+            }}
+            
+            @keyframes spin {{
+                from {{ transform: rotate(0deg); }}
+                to {{ transform: rotate(360deg); }}
+            }}
+            
+            .stApp {{
+                background: {theme['bg']};
+                color: {theme['text']};
+                transition: all 0.3s ease;
+            }}
+            
+            /* Animated page content */
             .main .block-container {{
-                padding: 1.5rem;
-                max-width: 1200px;
-                margin: 0 auto;
+                animation: fadeIn 0.5s ease-out;
             }}
             
-            /* Sidebar styling */
-            [data-testid="stSidebar"] {{
-                background-color: #f8f9fa;
-                border-right: 1px solid #e9ecef;
-            }}
-            
-            /* Card styling */
-            .card {{
-                background-color: {Theme.CARD_BACKGROUND};
-                border-radius: {Theme.BORDER_RADIUS};
-                padding: 1.5rem;
-                box-shadow: {Theme.BOX_SHADOW};
-                margin-bottom: 1rem;
-                border-left: 4px solid {Theme.PRIMARY_COLOR};
-            }}
-            
-            /* Button styling */
+            /* Enhanced buttons */
             .stButton>button {{
-                border-radius: {Theme.BORDER_RADIUS};
-                border: none;
-                background-color: {Theme.PRIMARY_COLOR};
-                color: white;
-                padding: 0.5rem 1.5rem;
+                border-radius: 8px;
                 font-weight: 500;
-                transition: all 0.3s ease;
+                border: none;
+                transition: all 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }}
-            
             .stButton>button:hover {{
-                background-color: {Theme.SECONDARY_COLOR};
                 transform: translateY(-2px);
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            }}
+            .stButton>button:active {{
+                transform: translateY(0);
             }}
             
-            /* Metric cards */
-            .metric-card {{
-                background: linear-gradient(145deg, #ffffff, #f0f0f0);
-                border-radius: {Theme.BORDER_RADIUS};
+            /* Animated cards */
+            .card {{
+                background: {theme['bg']};
+                border-radius: 12px;
                 padding: 1.5rem;
-                text-align: center;
-                box-shadow: {Theme.BOX_SHADOW};
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
                 transition: all 0.3s ease;
+                animation: slideIn 0.4s ease-out;
+                border: 1px solid {theme['bg_secondary']};
+            }}
+            .card:hover {{
+                transform: translateY(-4px);
+                box-shadow: 0 8px 16px rgba(0,0,0,0.12);
             }}
             
-            .metric-card:hover {{
-                transform: translateY(-5px);
-                box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            }}
-            
-            .metric-value {{
+            /* Enhanced metrics */
+            [data-testid="stMetricValue"] {{
                 font-size: 2rem;
                 font-weight: 700;
-                color: {Theme.PRIMARY_COLOR};
-                margin: 0.5rem 0;
+                color: {theme['primary']};
+                animation: fadeIn 0.6s ease-out;
+            }}
+            [data-testid="stMetricLabel"] {{
+                color: {theme['text']};
+                opacity: 0.8;
             }}
             
-            .metric-label {{
-                font-size: 0.9rem;
-                color: #666;
-                margin: 0;
+            /* Tooltip styles */
+            .tooltip {{
+                position: relative;
+                display: inline-block;
+                cursor: help;
+            }}
+            .tooltip .tooltiptext {{
+                visibility: hidden;
+                background-color: {theme['dark']};
+                color: {theme['light']};
+                text-align: center;
+                padding: 8px 12px;
+                border-radius: 6px;
+                position: absolute;
+                z-index: 1;
+                bottom: 125%;
+                left: 50%;
+                margin-left: -80px;
+                opacity: 0;
+                transition: opacity 0.3s;
+                width: 160px;
+                font-size: 0.85rem;
+            }}
+            .tooltip:hover .tooltiptext {{
+                visibility: visible;
+                opacity: 1;
             }}
             
-            /* Custom tabs */
+            /* Loading spinner */
+            .spinner {{
+                border: 3px solid {theme['bg_secondary']};
+                border-top: 3px solid {theme['primary']};
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+                margin: 20px auto;
+            }}
+            
+            /* Enhanced Tabs - Modern Pill Style */
             .stTabs [data-baseweb="tab-list"] {{
-                gap: 8px;
+                gap: 12px;
+                background: {theme['bg_secondary']};
+                padding: 12px;
+                border-radius: 16px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             }}
             
             .stTabs [data-baseweb="tab"] {{
-                height: 40px;
-                padding: 0 20px;
-                border-radius: 20px;
-                background-color: #f0f0f0;
+                padding: 14px 28px;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 0.95rem;
                 transition: all 0.3s ease;
+                background: transparent;
+                color: {theme['text']};
+                opacity: 0.7;
+                border: none;
+            }}
+            
+            .stTabs [data-baseweb="tab"]:hover {{
+                background: {theme['bg']};
+                opacity: 1;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             }}
             
             .stTabs [aria-selected="true"] {{
-                background-color: {Theme.PRIMARY_COLOR};
+                background: {theme['primary']};
                 color: white !important;
+                opacity: 1;
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                transform: translateY(-2px);
             }}
             
-            /* Form elements */
-            .stTextInput>div>div>input, 
+            .stTabs [data-baseweb="tab-panel"] {{
+                padding-top: 2rem;
+            }}
+            
+            /* Input fields */
+            .stTextInput>div>div>input,
+            .stNumberInput>div>div>input,
             .stSelectbox>div>div>div {{
-                border-radius: {Theme.BORDER_RADIUS} !important;
-                border: 1px solid #ddd !important;
+                background: {theme['bg']};
+                color: {theme['text']};
+                border-color: {theme['bg_secondary']};
+                transition: all 0.2s ease;
             }}
             
-            /* Custom scrollbar */
-            ::-webkit-scrollbar {{
-                width: 8px;
-                height: 8px;
-            }}
-            
-            ::-webkit-scrollbar-track {{
-                background: #f1f1f1;
-                border-radius: 10px;
-            }}
-            
-            ::-webkit-scrollbar-thumb {{
-                background: #888;
-                border-radius: 10px;
-            }}
-            
-            ::-webkit-scrollbar-thumb:hover {{
-                background: #555;
+            /* Success/Error animations */
+            .success-badge {{
+                background: {theme['success']};
+                color: white;
+                padding: 8px 16px;
+                border-radius: 20px;
+                display: inline-block;
+                animation: fadeIn 0.5s ease-out;
             }}
         </style>
         """, unsafe_allow_html=True)
 
-class UIComponents:
-    """UI Components for the Smart Agriculture System"""
+class UI:
+    """Enhanced UI components with animations and tooltips"""
     
     @staticmethod
-    def page_header(title: str, description: str = None):
-        """Create a beautiful page header"""
-        st.markdown(f"""
-        <div style="margin-bottom: 2rem;">
-            <h1 style="color: {Theme.PRIMARY_COLOR}; margin-bottom: 0.5rem;">{title}</h1>
-            {f'<p style="color: #666; margin: 0;">{description}</p>' if description else ''}
-            <div style="height: 4px; width: 60px; background: {Theme.ACCENT_COLOR}; margin: 0.5rem 0 1.5rem 0;"></div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    @staticmethod
-    def metric_card(title: str, value: Any, delta: str = None, icon: str = None):
-        """Create a metric card with optional delta and icon"""
-        delta_html = f'<span style="color: #28a745; font-size: 0.9rem;">{delta}</span>' if delta else ''
-        icon_html = f'<span style="font-size: 1.5rem; margin-right: 0.5rem;">{icon}</span>' if icon else ''
+    def header(title: str, subtitle: str = None, help_text: str = None):
+        """Animated page header with optional tooltip"""
+        theme = Theme.get_current()
         
+        # Simple header without complex HTML
+        st.markdown(f"<h1 style='color: {theme['primary']};'>{title}</h1>", unsafe_allow_html=True)
+        
+        if subtitle:
+            st.markdown(f"<p style='color: {theme['text']}; opacity: 0.8; font-size: 1.1rem;'>{subtitle}</p>", unsafe_allow_html=True)
+        
+        if help_text:
+            st.caption(f"ℹ️ {help_text}")
+        
+        st.divider()
+    
+    @staticmethod
+    def card(content_func: Callable, title: str = None, icon: str = None):
+        """Animated card with hover effects"""
+        with st.container():
+            if title:
+                icon_html = f"{icon} " if icon else ""
+                st.markdown(f"### {icon_html}{title}")
+            content_func()
+    
+    @staticmethod
+    def metric_grid(metrics: List[tuple], cols: int = 4):
+        """Animated metrics grid"""
+        columns = st.columns(cols)
+        for col, metric_data in zip(columns, metrics):
+            with col:
+                label, value, delta = metric_data[:3]
+                help_text = metric_data[3] if len(metric_data) > 3 else None
+                
+                # Use Streamlit's built-in help parameter instead of custom tooltips
+                st.metric(label, value, delta, help=help_text)
+    
+    @staticmethod
+    def loading_spinner(text: str = "Loading..."):
+        """Animated loading spinner"""
         st.markdown(f"""
-        <div class="metric-card">
-            <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem;">
-                {icon_html}
-                <h3 style="margin: 0; color: #666; font-size: 0.9rem;">{title}</h3>
-            </div>
-            <div class="metric-value">{value}</div>
-            {delta_html}
+        <div style="text-align: center; padding: 2rem;">
+            <div class="spinner"></div>
+            <p style="margin-top: 1rem; opacity: 0.8;">{text}</p>
         </div>
         """, unsafe_allow_html=True)
     
     @staticmethod
-    def info_card(title: str, content: str, icon: str = "ℹ️"):
-        """Create an info card with icon and content"""
-        st.markdown(f"""
-        <div class="card">
-            <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                <div style="font-size: 1.5rem; color: {Theme.PRIMARY_COLOR};">{icon}</div>
-                <div>
-                    <h3 style="margin: 0 0 0.5rem 0; color: {Theme.TEXT_COLOR};">{title}</h3>
-                    <p style="margin: 0; color: #666; line-height: 1.6;">{content}</p>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+    def success_badge(text: str):
+        """Animated success badge"""
+        st.markdown(f'<div class="success-badge">✓ {text}</div>', unsafe_allow_html=True)
     
     @staticmethod
-    def status_indicator(status: str, message: str = ""):
-        """Create a status indicator with colored dot"""
-        status_colors = {
-            "success": "#28a745",
-            "warning": "#ffc107",
-            "error": "#dc3545",
-            "info": "#17a2b8"
+    def bar_chart(data: Dict[str, float], title: str = None, color: str = None):
+        """Enhanced bar chart with animations"""
+        theme = Theme.get_current()
+        color = color or theme['primary']
+        
+        fig = go.Figure(go.Bar(
+            x=list(data.values()),
+            y=list(data.keys()),
+            orientation='h',
+            marker=dict(
+                color=color,
+                line=dict(color=theme['text'], width=0.5)
+            ),
+            text=[f"{v:.1f}" for v in data.values()],
+            textposition='auto',
+        ))
+        
+        fig.update_layout(
+            title=title,
+            height=max(200, len(data) * 50),
+            margin=dict(l=0, r=0, t=30, b=0),
+            plot_bgcolor=theme['bg'],
+            paper_bgcolor=theme['bg'],
+            showlegend=False,
+            font=dict(color=theme['text']),
+            xaxis=dict(
+                showgrid=True,
+                gridcolor=theme['bg_secondary'],
+                color=theme['text']
+            ),
+            yaxis=dict(showgrid=False, color=theme['text']),
+        )
+        
+        st.plotly_chart(fig, width="stretch", config={'displayModeBar': False})
+    
+    @staticmethod
+    def info_box(message: str, type: str = "info"):
+        """Animated info box"""
+        theme = Theme.get_current()
+        colors = {
+            'info': theme['secondary'],
+            'success': theme['success'],
+            'warning': theme['warning'],
+            'error': theme['danger']
+        }
+        icons = {
+            'info': 'ℹ️',
+            'success': '✓',
+            'warning': '⚠️',
+            'error': '✗'
         }
         
-        color = status_colors.get(status.lower(), "#6c757d")
-        
         st.markdown(f"""
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
-            <div style="
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                background-color: {color};
-            "></div>
-            <span style="color: {color}; font-weight: 500; text-transform: capitalize;">{status}</span>
-            {f'<span style="color: #666; margin-left: 0.5rem;">{message}</span>' if message else ''}
+        <div style="
+            background: {colors.get(type, theme['secondary'])}15;
+            border-left: 4px solid {colors.get(type, theme['secondary'])};
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            animation: slideIn 0.4s ease-out;">
+            <strong>{icons.get(type, 'ℹ️')} {message}</strong>
         </div>
         """, unsafe_allow_html=True)
-    
-    @staticmethod
-    def loading_animation(text: str = "Loading..."):
-        """Show a loading animation"""
-        return st.markdown(f"""
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem;">
-            <div class="spinner"></div>
-            <p style="margin-top: 1rem; color: #666;">{text}</p>
-        </div>
-        <style>
-            @keyframes spin {{
-                0% {{ transform: rotate(0deg); }}
-                100% {{ transform: rotate(360deg); }}
-            }}
-            .spinner {{
-                border: 4px solid rgba(0, 0, 0, 0.1);
-                width: 36px;
-                height: 36px;
-                border-radius: 50%;
-                border-left-color: {Theme.PRIMARY_COLOR};
-                animation: spin 1s linear infinite;
-            }}
-        </style>
-        """, unsafe_allow_html=True)
-    
-    @staticmethod
-    def success_message(message: str):
-        """Display a success message"""
-        st.success(message, icon="✅")
-    
-    @staticmethod
-    def error_message(message: str):
-        """Display an error message"""
-        st.error(message, icon="❌")
-    
-    @staticmethod
-    def warning_message(message: str):
-        """Display a warning message"""
-        st.warning(message, icon="⚠️")
-    
-    @staticmethod
-    def info_message(message: str):
-        """Display an info message"""
-        st.info(message, icon="ℹ️")
-    
-    @staticmethod
-    def custom_tabs(tab_names: List[str]):
-        """
-        Create custom styled tabs that work well on mobile and desktop.
-        
-        Args:
-            tab_names: List of tab names to display
-            
-        Returns:
-            The selected tab index
-        """
-        # Use columns for better mobile responsiveness
-        if len(tab_names) > 3:  # For many tabs, use a selectbox on mobile
-            selected = st.radio(
-                "Select Tab",
-                options=tab_names,
-                horizontal=True,
-                label_visibility="collapsed"
-            )
-            return tab_names.index(selected)
-        else:
-            # For few tabs, use styled buttons
-            cols = st.columns(len(tab_names))
-            selected = 0
-            
-            for i, name in enumerate(tab_names):
-                with cols[i]:
-                    if st.button(name, key=f"tab_{i}", width="stretch"):
-                        selected = i
-            
-            # Add some spacing
-            st.markdown("---")
-            return selected
-            
-    def responsive_columns(self, num_columns: int, gap: str = "1rem"):
-        """
-        Create responsive columns that stack on mobile.
-        
-        Args:
-            num_columns: Number of columns to create
-            gap: Gap between columns (CSS value)
-            
-        Returns:
-            List of columns
-        """
-        return st.columns(num_columns, gap=gap)
-        
-    def mobile_friendly_metric(self, label: str, value: Any, delta: str = None, 
-                             help_text: str = None):
-        """
-        Display a metric that works well on mobile devices.
-        
-        Args:
-            label: Metric label
-            value: Metric value
-            delta: Optional delta value (e.g., "+10%")
-            help_text: Optional help text to show on hover
-        """
-        col1, col2 = st.columns([2, 3])
-        with col1:
-            st.markdown(f"**{label}**")
-            if help_text:
-                st.caption(help_text)
-        with col2:
-            if delta:
-                st.metric("", value, delta)
-            else:
-                st.markdown(f"### {value}")
-                
-    def responsive_expander(self, title: str, expanded: bool = False):
-        """
-        Create an expander that works well on mobile.
-        
-        Args:
-            title: Expander title
-            expanded: Whether the expander should be expanded by default
-            
-        Returns:
-            The expander object
-        """
-        return st.expander(title, expanded=expanded)
