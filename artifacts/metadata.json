@@ -1,6 +1,6 @@
 {
-  "model_path": "D:\\Smart Agriculture System\\artifacts\\model.joblib",
-  "config_path": "D:\\Smart Agriculture System\\configs\\default.json",
+  "model_path": "model.joblib",
+  "config_path": "../configs/default.json",
   "metrics": {
     "mae": 1.7613488830983868,
     "r2": 0.029181860082166278
