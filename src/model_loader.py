@@ -23,17 +23,28 @@ def load_service(metadata_path: str) -> Any:
         RuntimeError: If the service fails to initialize
     """
     try:
-        # Load metadata
+        # Load metadata and resolve model path
         try:
             with open(metadata_path) as f:
                 metadata = json.load(f)
-            model_path = Path(metadata.get("model_path", "models/crop_yield_model.pkl"))
+            model_path_str = metadata.get("model_path", "artifacts/model.joblib")
         except (FileNotFoundError, json.JSONDecodeError) as e:
-            logger.warning(f"Could not load metadata from {metadata_path}: {str(e)}. Using default model path.")
-            model_path = Path("models/crop_yield_model.pkl")
-        
-        # Resolve relative paths relative to the metadata file
-        if not model_path.is_absolute():
+            logger.warning(
+                f"Could not load metadata from {metadata_path}: {str(e)}. Using default model path."
+            )
+            model_path_str = "artifacts/model.joblib"
+
+        # Handle Windows-style absolute paths from local training (e.g. "D:\\Smart Agriculture System\\artifacts\\model.joblib")
+        # On Streamlit Cloud (Linux), we only care about the filename and expect it under the repo's artifacts/ folder.
+        raw = str(model_path_str)
+        if ":" in raw or "\\" in raw:
+            # Strip drive and directories, keep only the filename
+            model_path = Path(raw).name
+        else:
+            model_path = Path(raw)
+
+        # Resolve relative paths relative to the metadata file location
+        if not Path(model_path).is_absolute():
             model_path = Path(metadata_path).parent / model_path
         
         logger.info(f"Loading model from {model_path}")
