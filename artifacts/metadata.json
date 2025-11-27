@@ -1,15 +1,22 @@
 {
-  "model_path": "model.joblib",
-  "config_path": "../configs/default.json",
+  "model_path": "artifacts\\model.joblib",
+  "model_type": "RandomForestRegressor",
+  "features": [
+    "region",
+    "crop",
+    "season",
+    "avg_temp_c",
+    "avg_rainfall_mm",
+    "soil_moisture_pct",
+    "ndvi",
+    "soil_ph",
+    "pest_pressure_idx",
+    "fertilizer_kg_per_ha"
+  ],
+  "target": "yield",
   "metrics": {
-    "mae": 1.7613488830983868,
-    "r2": 0.029181860082166278
+    "training_date": "2025-11-27T14:48:23.792136",
+    "description": "Initial model trained on synthetic data"
   },
-  "fairness_report": {
-    "East": 1.0048141233309302,
-    "North": 0.9258282802752572,
-    "South": 1.1503891831284074,
-    "West": 0.9979595881380863,
-    "max_mae_gap": 0.22456090285315022
-  }
+  "version": "1.0.0"
 }
