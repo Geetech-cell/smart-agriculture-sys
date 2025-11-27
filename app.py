@@ -78,7 +78,7 @@ def home_page():
     with col1:
         def weather_chart():
             # Get weather data
-            if st.button("🔄 Refresh Weather", key="refresh_weather", use_container_width=True):
+            if st.button("🔄 Refresh Weather", key="refresh_weather", width='stretch'):
                 weather = get_weather_for_region("Central")
                 st.session_state.weather_data = weather
             
@@ -468,7 +468,7 @@ def health_page():
                      labels={'value': 'Score / °C', 'variable': 'Metric'},
                      height=400)
         fig.update_layout(legend_title_text='')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
     
     # Recommendations section
     st.markdown("---")
